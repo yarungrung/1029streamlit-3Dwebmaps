@@ -5,11 +5,6 @@ import pydeck as pdk
 
 st.title("Pydeck 3D 地圖 (向量 - 密度圖)")
 
-# 0. 檢查 Mapbox 金鑰是否存在於 Secrets 中 (名稱應為 MAPBOX_API_KEY)
-if "MAPBOX_API_KEY" not in st.secrets:
-    st.error("Mapbox API Key (名稱需為 MAPBOX_API_KEY) 未設定！請在雲端 Secrets 中設定。")
-    st.stop()
-
 # --- 1. 生成範例資料 (向量) ---
 data = pd.DataFrame({
     'lat': 25.0478 + np.random.randn(1000) / 50,
