@@ -41,7 +41,7 @@ st.title("Plotly 3D 地圖 (網格 - DEM 表面)")
 # --- 1. 讀取範例 DEM 資料 ---
 # Plotly 內建的 "volcano" (火山) DEM 數據 (儲存為 CSV)
 # 這是一個 2D 陣列 (Grid)，每個格子的值就是海拔
-z_data = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/api_docs/mt_bruno_elevation.csv")
+z_data = pd.read_csv("內政部20公尺網格數值地形模型資料.csv")
 
 # --- 2. 建立 3D Surface 圖 ---
 # 建立一個 Plotly 的 Figure 物件，它是所有圖表元素的容器
