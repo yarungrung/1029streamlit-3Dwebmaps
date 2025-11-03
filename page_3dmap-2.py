@@ -74,55 +74,54 @@ st.dataframe(df_year)
 
 # ---------------------------------------------------------------------------------------
 
-st.title("Plotly 3D 地圖 (DEM Surface)")
-
+ st.title("Plotly 3D 地圖 (DEM Surface)")
 # --- 1. 讀取 DEM ---
 # 建立相對路徑
 tif_path = os.path.join(os.path.dirname(__file__), "data", "taiwan_dem.tif")
 
-try:
+try:  # 讀取 DEM
     with rasterio.open(tif_path) as src:
-      band1 = src.read(1)
-      transform = src.transform
+        band1 = src.read(1)
+        transform = src.transform
 
-      st.write("Raster shape:", band1.shape)
-      st.image(band1, caption="DEM 影像", use_column_width=True)
-       
-       # 為了避免太大，我們先降採樣
-       band1 = band1[::20, ::20]  # 每 20 像素取一點，可依需要調整
+        st.write("Raster shape:", band1.shape)
+        st.image(band1, caption="DEM 影像", use_column_width=True)
 
-       # 建立座標網格
-       rows, cols = np.indices(band1.shape)
-       xs, ys = rasterio.transform.xy(transform, rows, cols)
-       x_coords = np.array(xs[0])
-       y_coords = np.array([row[0] for row in ys])
+        # 為了避免太大，先降採樣
+        band1 = band1[::20, ::20]   # 每 20 像素取一點，可依需要調整
 
-# --- 2. 建立 Plotly 3D Surface ---
-fig = go.Figure(data=[
-    go.Surface(
-        z=band1,       # 直接給 2D 陣列
-        x=x_coords,    # 經度
-        y=y_coords,    # 緯度
-        colorscale="Viridis"
-    )
-])
+        # 建立座標網格
+        rows, cols = np.indices(band1.shape)
+        xs, ys = rasterio.transform.xy(transform, rows, cols)
+        x_coords = np.array(xs[0])
+        y_coords = np.array([row[0] for row in ys])
+
+    # 建立 Plotly 3D Surface
+    fig = go.Figure(data=[
+        go.Surface(
+            z=band1,     # 直接給 2D 陣列
+            x=x_coords,  # 經度
+            y=y_coords,  # 緯度
+            colorscale="Viridis"
+        )
+    ])
 
 # --- 3. 調整 3D 視角和外觀 ---
 # 使用 update_layout 方法來修改圖表的整體佈局和外觀設定
 # 設定圖表的寬度和高度 (單位：像素)
-fig.update_layout(
-    title="台灣 3D 地形圖 (可旋轉)",
-    width=900,
-    height=750,
-    scene=dict(
-        xaxis_title="經度 (X)",
-        yaxis_title="緯度 (Y)",
-        zaxis_title="海拔 (Z)"
+    fig.update_layout(
+        title="台灣 3D 地形圖 (可旋轉)",
+        width=900,
+        height=750,
+        scene=dict(
+            xaxis_title="經度 (X)",
+            yaxis_title="緯度 (Y)",
+            zaxis_title="海拔 (Z)"
+        )
     )
-)
 
-# --- 3. 在 Streamlit 中顯示 ---
-st.plotly_chart(fig)
+    # --- 4. 在 Streamlit 中顯示 ---
+    st.plotly_chart(fig)
 
 except rasterio.errors.RasterioIOError as e:
-    st.error(f"⚠️ 無法開啟 GeoTIFF：{tif_path}\n\n請確認檔案是否存在且為有效格式。\n詳細錯誤：{e}")
+    st.error(f"⚠️ 無法開啟 GeoTIFF：{tif_path}\n請確認檔案存在且為有效格式。\n詳細錯誤：{e}")
