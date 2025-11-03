@@ -54,7 +54,7 @@ st.pydeck_chart(r_hexagon)
 # ===============================================
 
 st.title("Pydeck 3D 地圖")
-st.header("新竹市公車站 網格-DEM模擬")
+st.header("新竹市網格-DEM模擬")
 # --- 1. 模擬 DEM 網格資料 ---
 x, y = np.meshgrid(np.linspace(-1, 1, 50), np.linspace(-1, 1, 50))
 z = np.exp(-(x**2 + y**2) * 2) * 800 + np.random.rand(50, 50) * 200  # 模擬地形起伏
