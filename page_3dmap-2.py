@@ -74,7 +74,7 @@ st.dataframe(df_year)
 
 # ---------------------------------------------------------------------------------------
 
- st.title("Plotly 3D 地圖 (DEM Surface)")
+st.title("Plotly 3D 地圖 (DEM Surface)")
 # --- 1. 讀取 DEM ---
 # 建立相對路徑
 tif_path = os.path.join(os.path.dirname(__file__), "data", "taiwan_dem.tif")
