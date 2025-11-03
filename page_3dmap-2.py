@@ -6,7 +6,7 @@ import pandas as pd
 
 st.title("Plotly 3D 地圖 (向量 - 地球儀)")
 
-file_path = "C://WID_Data_29102025-044042.csv"
+file_path = "WID_Data_29102025-044042.csv"
 try:
     df_raw = pd.read_csv(file_path, encoding="utf-8", header=None)
 except Exception as e:
