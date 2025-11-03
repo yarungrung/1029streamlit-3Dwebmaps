@@ -78,7 +78,7 @@ st.dataframe(df_year)
 st.title("Plotly 3D 地圖 (DEM Surface)")
 
 # --- 1. 讀取 DEM ---
-tif_filename = 'taiwan_dem.tif'
+tif_filename = 'small_dem_fixed.tif'
 tif_path = os.path.join(os.path.dirname(__file__), "data", tif_filename)
 
 # 檢查檔案是否存在 (防止 Streamlit Cloud 找不到檔案)
@@ -91,11 +91,11 @@ try:  # 讀取 DEM
         band1 = src.read(1)
         transform = src.transform
 
-        st.write("Raster shape:", band1.shape)
-        st.image(band1, caption="DEM 影像", use_column_width=True)
-
+        st.write("Raster shape(Full):", band1.shape)
         # 為了避免太大，先降採樣
         band1 = band1[::20, ::20]   # 每 20 像素取一點，可依需要調整
+        # 顯示降採樣後的大小，作為檢查點
+        st.write("Raster shape (Sampled):", band1.shape)
 
         # 建立座標網格
         rows, cols = np.indices(band1.shape)
@@ -131,7 +131,6 @@ try:  # 讀取 DEM
     st.plotly_chart(fig)
 
 except rasterio.errors.RasterioIOError as e:
-    # 錯誤時會顯示找不到哪個路徑的檔案
-    st.error(f"⚠️ 無法開啟 GeoTIFF：{tif_path}\n請確認檔案存在且為有效格式。\n詳細錯誤：{e}")
+    st.error(f"⚠️ 檔案損壞！無法開啟 GeoTIFF：{tif_path}\n詳細錯誤：{e}")
 except Exception as e:
     st.error(f"⚠️ 發生未知錯誤：{e}")
