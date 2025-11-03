@@ -78,35 +78,33 @@ st.dataframe(df_year)
 st.title("Plotly 3D 地圖 (DEM Surface)")
 
 # --- 1. 讀取 DEM ---
-tif_filename = 'small_dem_fixed.tif'
-tif_path = os.path.join(os.path.dirname(__file__), "data", tif_filename)
+TIF_URL = "/vsicurl/https://github.com/OSGeo/gdal/raw/master/autotest/ogr/data/dem.tif"
 
-# 檢查檔案是否存在 (防止 Streamlit Cloud 找不到檔案)
-if not os.path.exists(tif_path):
-    st.error(f"❌ 檔案遺失！請確認 {tif_path} 檔案已在 GitHub 的 data/ 資料夾中提交。")
-    st.stop()
+# 設置 tif_path 為這個 URL
+tif_path = TIF_URL
+
 
 try:  # 讀取 DEM
     with rasterio.open(tif_path) as src:
         band1 = src.read(1)
         transform = src.transform
 
-        st.write("Raster shape(Full):", band1.shape)
-        # 為了避免太大，先降採樣
-        band1 = band1[::20, ::20]   # 每 20 像素取一點，可依需要調整
-        # 顯示降採樣後的大小，作為檢查點
-        st.write("Raster shape (Sampled):", band1.shape)
+        sst.write("Raster shape:", band1.shape)
+        st.image(band1, caption="測試 DEM 影像", use_column_width=True)
+
+        # 由於檔案極小，降採樣可省略，但為保持繪圖邏輯我們保留它
+        band1 = band1[::1, ::1]  # 幾乎不降採樣
 
         # 建立座標網格
         rows, cols = np.indices(band1.shape)
-        xs, ys = rasterio.transform.xy(transform, rows * 20, cols * 20)
+        xs, ys = rasterio.transform.xy(transform,rows, cols)
         x_coords = np.array(xs[0])
         y_coords = np.array([row[0] for row in ys])
 
     # 建立 Plotly 3D Surface
     fig = go.Figure(data=[
         go.Surface(
-            z=band1,     # 海拔高度 (已降採樣)
+            z=band1,     # 海拔高度 
             x=x_coords,  # 經度
             y=y_coords,  # 緯度
             colorscale="Viridis"
@@ -130,7 +128,6 @@ try:  # 讀取 DEM
     # --- 4. 在 Streamlit 中顯示 ---
     st.plotly_chart(fig)
 
-except rasterio.errors.RasterioIOError as e:
-    st.error(f"⚠️ 檔案損壞！無法開啟 GeoTIFF：{tif_path}\n詳細錯誤：{e}")
+
 except Exception as e:
-    st.error(f"⚠️ 發生未知錯誤：{e}")
+    st.error(f"⚠️ 最終錯誤：無法讀取 GeoTIFF。這表示底層 GDAL 函式庫可能有問題。\n詳細錯誤：{e}")
