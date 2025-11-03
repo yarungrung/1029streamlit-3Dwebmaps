@@ -75,7 +75,7 @@ st.dataframe(df_year)
 st.title("Plotly 3D 地圖 (網格 - DEM 表面)")
 
 # --- 1. 讀取 DEM ---
-tif_path = r"C:/不分幅_台灣20MDEM(2024).tif"  # 修改路徑格式
+tif_path = r"C:/taiwan_dem.tif"  # 修改路徑格式
 
 with rasterio.open(tif_path) as src:
     band1 = src.read(1)
