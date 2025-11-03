@@ -18,6 +18,7 @@ year_row = df_raw.iloc[year_row_idx]
 df = df_raw.iloc[year_row_idx + 1:].copy()
 df.columns = year_row
 
+
 # 移除可能重複的 header 或非國家行
 df = df[~df["Country"].astype(str).str.contains("pall", case=False, na=False)]
 
