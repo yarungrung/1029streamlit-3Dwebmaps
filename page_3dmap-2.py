@@ -78,7 +78,7 @@ st.dataframe(df_year)
 st.title("Plotly 3D 地圖 (DEM Surface)")
 
 # --- 1. 讀取 DEM ---
-tif_filename = 'small_dem.tif'
+tif_filename = 'taiwan_dem.tif'
 tif_path = os.path.join(os.path.dirname(__file__), "data", tif_filename)
 
 # 檢查檔案是否存在 (防止 Streamlit Cloud 找不到檔案)
