@@ -79,13 +79,33 @@ st.title("Plotly 3D 地圖 (DEM Surface)")
 # --- 1. 讀取 DEM ---
 # 建立相對路徑
 REMOTE_TIF_URL = "https://drive.google.com/uc?export=download&id=1zzK2alk7muC_uRdICVseYGPUMc3MtPLt"
-# 將 tif_path 直接設定為雲端 URL，這樣 rasterio 就能直接讀取
-tif_path = REMOTE_TIF_URL
+# 定義本地儲存路徑 (這是 rasterio 最終要讀取的位置)
+LOCAL_TIF_PATH = os.path.join(os.path.dirname(__file__), "data", "taiwan_dem.tif")
+
+# 讓 tif_path 變數永遠指向本地路徑
+tif_path = LOCAL_TIF_PATH
 
 if not os.path.exists(tif_path):
     st.info("🌐 正在從 Google Drive 下載大型 GeoTIFF 檔案 (僅首次運行需下載)...")
+    # 建立儲存資料夾 (用本地路徑)
     os.makedirs(os.path.dirname(tif_path), exist_ok=True)
-    
+
+    try:
+     # 執行下載，確保 Streamlit 環境內有這個檔案
+        response = requests.get(REMOTE_TIF_URL, stream=True)
+        response.raise_for_status() 
+
+        with open(tif_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        st.success(f"✅ 檔案下載完成：{os.path.basename(tif_path)}")
+        # 提示 Streamlit 重新運行，以便讀取新下載的檔案
+        st.experimental_rerun() 
+        
+    except Exception as e:
+        st.error(f"❌ 下載檔案失敗。請檢查檔案是否公開或連結是否失效。\n詳細錯誤: {e}")
+        st.stop()
+
 try:  # 讀取 DEM
     with rasterio.open(tif_path) as src:
         band1 = src.read(1)
