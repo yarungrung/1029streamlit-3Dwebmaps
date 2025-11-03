@@ -6,6 +6,7 @@ import rasterio
 import numpy as np
 import os
 import requests
+from rasterio.windows import Window
 
 file_path = "WID_Data_29102025-044042.csv"
 st.title("Plotly 3D 地球 全球極端貧窮人口比例")
@@ -76,52 +77,33 @@ st.dataframe(df_year)
 # ---------------------------------------------------------------------------------------
 
 st.title("Plotly 3D 地圖 (DEM Surface)")
+# 讀取原始大檔案（假設在本地可存取）
+with rasterio.open('taiwan_dem.tif') as src:
+    # 裁剪一個小視窗 (例如：取左上角 1000x1000 像素的範圍)
+    # 這是非常小的範圍，可以確保檔案大小極小
+    small_window = Window(col_off=1000, row_off=1000, width=1000, height=1000)
+
+    # 讀取數據和轉換
+    data = src.read(1, window=small_window)
+    transform = src.window_transform(small_window)
+
+    # 設定新的檔案資訊
+    profile = src.profile
+    profile.update({
+        'height': data.shape[0],
+        'width': data.shape[1],
+        'transform': transform
+    })
+
+    # 寫入新的小檔案 (命名為 small_dem.tif)
+    with rasterio.open('data/small_dem.tif', 'w', **profile) as dst:
+        dst.write(data, 1)
+
+print("小型 DEM 檔案 'data/small_dem.tif' 已創建，請檢查其大小是否小於 50MB。")
+
 # --- 1. 讀取 DEM ---
-# 建立相對路徑
-REMOTE_TIF_URL = "https://drive.google.com/uc?export=download&id=1zzK2alk7muC_uRdICVseYGPUMc3MtPLt"
-# 定義本地儲存路徑 (這是 rasterio 最終要讀取的位置)
-LOCAL_TIF_PATH = os.path.join(os.path.dirname(__file__), "data", "taiwan_dem.tif")
+tif_path = os.path.join(os.path.dirname(__file__), "data", "small_dem.tif")
 
-# 讓 tif_path 變數永遠指向本地路徑
-tif_path = LOCAL_TIF_PATH
-
-if not os.path.exists(tif_path):
-    st.info("🌐 正在從 Google Drive 下載大型 GeoTIFF 檔案 (僅首次運行需下載)...")
-    # 建立儲存資料夾 (用本地路徑)
-    os.makedirs(os.path.dirname(tif_path), exist_ok=True)
-
-    try:
-     # 執行下載，確保 Streamlit 環境內有這個檔案
-        response = requests.get(REMOTE_TIF_URL, stream=True)
-        response.raise_for_status() 
-
-        with open(tif_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        st.success(f"✅ 檔案下載完成：{os.path.basename(tif_path)}")
-        # 提示 Streamlit 重新運行，以便讀取新下載的檔案
-        st.experimental_rerun() 
-        
-    except Exception as e:
-        st.error(f"❌ 下載檔案失敗。請檢查檔案是否公開或連結是否失效。\n詳細錯誤: {e}")
-        st.stop()
-
-# 檢查檔案是否真的存在且大小合理
-if os.path.exists(tif_path):
-    file_size_bytes = os.path.getsize(tif_path)
-    file_size_mb = file_size_bytes / (1024 * 1024)
-    
-    st.write(f"📁 本地檔案大小檢查：{file_size_mb:.2f} MB")
-    
-    # 請根據您檔案的實際大小，在這裡設定一個合理的閾值 (例如，大於 1MB)
-    # 假設您的 tif 檔案有 721.8 MB (根據您之前的截圖)
-    if file_size_mb < 100: 
-        st.error("❌ 警告：下載的檔案大小異常！這可能是一個 HTML 頁面而非 GeoTIFF 數據。")
-        # 您可以選擇 st.stop() 在這裡停止，直到問題解決
-        # st.stop()
-    else:
-        st.success("✅ 本地檔案大小檢查通過，內容看起來是完整的二進位數據。")
-        
 try:  # 讀取 DEM
     with rasterio.open(tif_path) as src:
         band1 = src.read(1)
