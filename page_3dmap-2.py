@@ -5,8 +5,7 @@ import pandas as pd
 import rasterio
 import numpy as np
 import os
-import requests
-from rasterio.windows import Window
+
 
 file_path = "WID_Data_29102025-044042.csv"
 st.title("Plotly 3D 地球 全球極端貧窮人口比例")
@@ -102,7 +101,7 @@ with rasterio.open('taiwan_dem.tif') as src:
 print("小型 DEM 檔案 'data/small_dem.tif' 已創建，請檢查其大小是否小於 50MB。")
 
 # --- 1. 讀取 DEM ---
-tif_path = os.path.join(os.path.dirname(__file__), "data", "small_dem.tif")
+tif_filename = 'small_dem.tif'
 
 try:  # 讀取 DEM
     with rasterio.open(tif_path) as src:
