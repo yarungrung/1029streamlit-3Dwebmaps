@@ -57,10 +57,10 @@ st.title("Pydeck 3D 地圖 (網格 - DEM 模擬)")
 
 # --- 1. 模擬 DEM 網格資料 ---
 x, y = np.meshgrid(np.linspace(-1, 1, 50), np.linspace(-1, 1, 50))
-z = np.exp(-(x**2 + y**2) * 2) * 1000
+z = np.exp(-(x**2 + y**2) * 2) * 800 + np.random.rand(50, 50) * 200  # 模擬地形起伏
 
 data_dem_list = [] # 修正: 建立一個列表來收集字典
-base_lat, base_lon = 25.0, 121.5
+base_lat, base_lon = 24.80395,120.964 #新竹市中心點
 for i in range(50):
     for j in range(50):
         data_dem_list.append({ # 修正: 將字典附加到列表中
@@ -77,7 +77,7 @@ layer_grid = pdk.Layer( # 稍微改個名字避免混淆
     get_position='[lon, lat]',
     get_elevation_weight='elevation', # 使用 'elevation' 欄位當作高度
     elevation_scale=1,
-    cell_size=2000,
+    cell_size=1500,
     extruded=True,
     pickable=True # 加上 pickable 才能顯示 tooltip
 )
