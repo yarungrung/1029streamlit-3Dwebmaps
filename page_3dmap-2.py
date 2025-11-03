@@ -82,9 +82,12 @@ tif_path = os.path.join(os.path.dirname(__file__), "data", "taiwan_dem.tif")
 
 try:
     with rasterio.open(tif_path) as src:
-       band1 = src.read(1)
-       st.write("Raster shape:", band1.shape)
-       st.image(band1, caption="DEM 影像", use_column_width=True)
+      band1 = src.read(1)
+      transform = src.transform
+
+      st.write("Raster shape:", band1.shape)
+      st.image(band1, caption="DEM 影像", use_column_width=True)
+       
        # 為了避免太大，我們先降採樣
        band1 = band1[::20, ::20]  # 每 20 像素取一點，可依需要調整
 
