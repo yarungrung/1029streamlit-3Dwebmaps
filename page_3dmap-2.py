@@ -7,7 +7,7 @@ import pandas as pd
 st.title("Plotly 3D 地圖 (向量 - 地球儀)")
 
 file_path = "WID_Data_29102025-044042.csv"
-t.title("Plotly 3D 地球儀：全球極端貧窮人口比例")
+st.title("Plotly 3D 地球儀：全球極端貧窮人口比例")
 
 CSV_FILE = "share-of-population-in-extreme-poverty.csv"
 VALUE_COL = "Share of population in poverty ($3 a day, 2021 prices)"
