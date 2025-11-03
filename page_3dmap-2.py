@@ -7,69 +7,72 @@ import pandas as pd
 st.title("Plotly 3D 地圖 (向量 - 地球儀)")
 
 file_path = "WID_Data_29102025-044042.csv"
-try:
-    df_raw = pd.read_csv(file_path, encoding="utf-8", header=None)
-except Exception as e:
-    st.error(f"❌ 無法讀取資料檔案：{e}")
+t.title("Plotly 3D 地球儀：全球極端貧窮人口比例")
+
+CSV_FILE = "share-of-population-in-extreme-poverty.csv"
+VALUE_COL = "Share of population in poverty ($3 a day, 2021 prices)"
+
+@st.cache_data
+def load_data():
+    df = pd.read_csv(CSV_FILE)
+
+    # 只保留 ISO3 國家代碼資料（排除地區）
+    df = df[df["Code"].str.len() == 3]
+
+    # 轉成整數年份（必需）
+    df["Year"] = pd.to_numeric(df["Year"], errors="coerce").astype("Int64")
+
+    # 有數值的年份清單
+    years = sorted(df.dropna(subset=[VALUE_COL])["Year"].unique(), reverse=True)
+
+    return df, years
+
+
+# --- 讀取資料 ---
+df, years = load_data()
+if df is None or not years.any():
+    st.error("資料讀取失敗")
     st.stop()
-# --- 1. 載入資料 ---
-year_row_idx = df_raw[df_raw.apply(lambda row: row.astype(str).str.contains("2014").any(), axis=1)].index[0]
-year_row = df_raw.iloc[year_row_idx]
-df = df_raw.iloc[year_row_idx + 1:].copy()
-df.columns = year_row
 
+# --- 年份選單 ---
+selected_year = st.selectbox("選擇年份", years)
 
-# 移除可能重複的 header 或非國家行
-df = df[~df["Country"].astype(str).str.contains("pall", case=False, na=False)]
+# --- 篩選年份資料 ---
+df_year = df[(df["Year"] == selected_year) & (df[VALUE_COL].notna())]
 
-# --- 4️⃣ 轉長表格（melt）---
-df_long = df.melt(id_vars=["Country"], var_name="Year", value_name="GDP_per_capita")
+if df_year.empty:
+    st.warning(f"{selected_year} 年沒有可用資料")
+    st.stop()
 
-# 嘗試轉換數字型態
-df_long["GDP_per_capita"] = pd.to_numeric(df_long["GDP_per_capita"], errors="coerce")
-df_long["Year"] = pd.to_numeric(df_long["Year"], errors="coerce")
-df_long = df_long.dropna(subset=["Year", "GDP_per_capita"])
-
-# --- 5️⃣ 下拉式選單選擇年份 ---
-years = sorted(df_long["Year"].unique())
-selected_year = st.selectbox("📅 選擇年份", years, index=len(years) - 1)
-
-# --- 6️⃣ 篩選該年份的資料 ---
-df_year = df_long[df_long["Year"] == selected_year]
- 
 # --- 2. 建立 3D 地理散點圖 (scatter_geo) ---
 fig = px.scatter_geo(
     df_year,
-    locations="Country",
-    locationmode="country names",
-    color="GDP_per_capita",
-    size="GDP_per_capita",
-    hover_name="Country",
+    locations="Code",
+    hover_name="Entity",
+    color=VALUE_COL,
+    size=VALUE_COL,
     projection="orthographic",
-    title=f"{int(selected_year)} 年全球人均 GDP 分佈"
+    color_continuous_scale=px.colors.sequential.YlOrRd,
+    title=f"{selected_year} 年全球極端貧窮人口比例"
 )
+# --- 在 Streamlit 中顯示 ---
+fig.update_layout(
+    geo=dict(showland=True, landcolor="rgb(230,230,230)")
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
+# ---資料表 ---
+st.subheader(f"{selected_year} 年資料表")
+st.dataframe(df_year)
+
+
 # "orthographic" 投影會將地球渲染成一個從太空中看到的球體，
 # 從而產生類似 3D 地球儀的視覺效果。
 # 其他常見投影如 "natural earth", "mercator" 等通常是 2D 平面地圖。
 
 
-# --- 3. 在 Streamlit 中顯示 ---
-fig.update_layout(
-    height=700,
-    margin=dict(l=0, r=0, t=40, b=0),
-    geo=dict(
-        showland=True,
-        landcolor="rgb(217, 217, 217)",
-        showocean=True,
-        oceancolor="rgb(200, 230, 255)",
-        showcountries=True,
-    )
-)
-st.plotly_chart(fig, use_container_width=True)
-# use_container_width=True:當設定為 True 時，Streamlit 會忽略 Plotly 圖表物件本身可能設定的寬度，
-# 並強制讓圖表的寬度自動延展，以填滿其所在的 Streamlit 容器 (例如，主頁面的寬度、某個欄位 (column) 的寬度，
-# 或是一個展開器 (expander) 的寬度)。
-
+# ---------------------------------------------------------------------------------------
 st.title("Plotly 3D 地圖 (網格 - DEM 表面)")
 
 # --- 1. 讀取範例 DEM 資料 ---
