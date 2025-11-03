@@ -30,7 +30,7 @@ def load_data():
 
 # --- 讀取資料 ---
 df, years = load_data()
-if df is None or not years.any():
+if df is None or len(years) == 0:
     st.error("資料讀取失敗")
     st.stop()
 
