@@ -106,6 +106,22 @@ if not os.path.exists(tif_path):
         st.error(f"❌ 下載檔案失敗。請檢查檔案是否公開或連結是否失效。\n詳細錯誤: {e}")
         st.stop()
 
+# 檢查檔案是否真的存在且大小合理
+if os.path.exists(tif_path):
+    file_size_bytes = os.path.getsize(tif_path)
+    file_size_mb = file_size_bytes / (1024 * 1024)
+    
+    st.write(f"📁 本地檔案大小檢查：{file_size_mb:.2f} MB")
+    
+    # 請根據您檔案的實際大小，在這裡設定一個合理的閾值 (例如，大於 1MB)
+    # 假設您的 tif 檔案有 721.8 MB (根據您之前的截圖)
+    if file_size_mb < 100: 
+        st.error("❌ 警告：下載的檔案大小異常！這可能是一個 HTML 頁面而非 GeoTIFF 數據。")
+        # 您可以選擇 st.stop() 在這裡停止，直到問題解決
+        # st.stop()
+    else:
+        st.success("✅ 本地檔案大小檢查通過，內容看起來是完整的二進位數據。")
+        
 try:  # 讀取 DEM
     with rasterio.open(tif_path) as src:
         band1 = src.read(1)
