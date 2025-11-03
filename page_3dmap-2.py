@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import rasterio
 import numpy as np
+import os
 
 file_path = "WID_Data_29102025-044042.csv"
 st.title("Plotly 3D 地球 全球極端貧窮人口比例")
@@ -88,10 +89,10 @@ tif_path = os.path.join(os.path.dirname(__file__), "data", "taiwan_dem.tif")
 if not os.path.exists(tif_path):
     st.error(f"❌ 找不到檔案：{tif_path}")
 else:
-    try:
-        with rasterio.open(tif_path) as src:
-            band1 = src.read(1)
-            transfor
+    with rasterio.open(tif_path) as src:
+       band1 = src.read(1)
+       st.write("Raster shape:", band1.shape)
+       st.image(band1, caption="DEM 影像", use_column_width=True)
 # 為了避免太大，我們先降採樣
 band1 = band1[::20, ::20]  # 每 20 像素取一點，可依需要調整
 
