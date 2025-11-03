@@ -5,6 +5,7 @@ import pandas as pd
 import rasterio
 import numpy as np
 import os
+import requests
 
 file_path = "WID_Data_29102025-044042.csv"
 st.title("Plotly 3D 地球 全球極端貧窮人口比例")
@@ -77,7 +78,9 @@ st.dataframe(df_year)
 st.title("Plotly 3D 地圖 (DEM Surface)")
 # --- 1. 讀取 DEM ---
 # 建立相對路徑
-tif_path = os.path.join(os.path.dirname(__file__), "data", "taiwan_dem.tif")
+REMOTE_TIF_URL = "YOUR_PUBLIC_URL_FOR_TAIWAN_DEM" 
+# 將 tif_path 直接設定為雲端 URL，這樣 rasterio 就能直接讀取
+tif_path = REMOTE_TIF_URL
 
 try:  # 讀取 DEM
     with rasterio.open(tif_path) as src:
