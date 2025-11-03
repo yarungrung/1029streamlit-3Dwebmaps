@@ -73,14 +73,25 @@ st.dataframe(df_year)
 
 # ---------------------------------------------------------------------------------------
 st.title("Plotly 3D 地圖 (網格 - DEM 表面)")
+import streamlit as st
+import rasterio
+import numpy as np
+import plotly.graph_objects as go
+import os
+
+st.title("Plotly 3D 地圖 (DEM Surface)")
 
 # --- 1. 讀取 DEM ---
-tif_path = r"C:/taiwan_dem.tif"  # 修改路徑格式
+# 建立相對路徑
+tif_path = os.path.join(os.path.dirname(__file__), "data", "taiwan_dem.tif")
 
-with rasterio.open(tif_path) as src:
-    band1 = src.read(1)
-    transform = src.transform
-
+if not os.path.exists(tif_path):
+    st.error(f"❌ 找不到檔案：{tif_path}")
+else:
+    try:
+        with rasterio.open(tif_path) as src:
+            band1 = src.read(1)
+            transfor
 # 為了避免太大，我們先降採樣
 band1 = band1[::20, ::20]  # 每 20 像素取一點，可依需要調整
 
@@ -89,7 +100,7 @@ rows, cols = np.indices(band1.shape)
 xs, ys = rasterio.transform.xy(transform, rows, cols)
 x_coords = np.array(xs[0])
 y_coords = np.array([row[0] for row in ys])
-
+m = src.transform
 # --- 2. 建立 Plotly 3D Surface ---
 fig = go.Figure(data=[
     go.Surface(
@@ -116,3 +127,5 @@ fig.update_layout(
 
 # --- 3. 在 Streamlit 中顯示 ---
 st.plotly_chart(fig)
+    except rasterio.errors.RasterioIOError as e:
+        st.error(f"⚠️ 無法開啟 GeoTIFF：{tif_path}\n\n請確認檔案是否存在且為有效格式。\n詳細錯誤：{e}")
