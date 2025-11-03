@@ -76,32 +76,15 @@ st.dataframe(df_year)
 # ---------------------------------------------------------------------------------------
 
 st.title("Plotly 3D 地圖 (DEM Surface)")
-# 讀取原始大檔案（假設在本地可存取）
-with rasterio.open('taiwan_dem.tif') as src:
-    # 裁剪一個小視窗 (例如：取左上角 1000x1000 像素的範圍)
-    # 這是非常小的範圍，可以確保檔案大小極小
-    small_window = Window(col_off=1000, row_off=1000, width=1000, height=1000)
-
-    # 讀取數據和轉換
-    data = src.read(1, window=small_window)
-    transform = src.window_transform(small_window)
-
-    # 設定新的檔案資訊
-    profile = src.profile
-    profile.update({
-        'height': data.shape[0],
-        'width': data.shape[1],
-        'transform': transform
-    })
-
-    # 寫入新的小檔案 (命名為 small_dem.tif)
-    with rasterio.open('data/small_dem.tif', 'w', **profile) as dst:
-        dst.write(data, 1)
-
-print("小型 DEM 檔案 'data/small_dem.tif' 已創建，請檢查其大小是否小於 50MB。")
 
 # --- 1. 讀取 DEM ---
 tif_filename = 'small_dem.tif'
+tif_path = os.path.join(os.path.dirname(__file__), "data", tif_filename)
+
+# 檢查檔案是否存在 (防止 Streamlit Cloud 找不到檔案)
+if not os.path.exists(tif_path):
+    st.error(f"❌ 檔案遺失！請確認 {tif_path} 檔案已在 GitHub 的 data/ 資料夾中提交。")
+    st.stop()
 
 try:  # 讀取 DEM
     with rasterio.open(tif_path) as src:
@@ -116,14 +99,14 @@ try:  # 讀取 DEM
 
         # 建立座標網格
         rows, cols = np.indices(band1.shape)
-        xs, ys = rasterio.transform.xy(transform, rows, cols)
+        xs, ys = rasterio.transform.xy(transform, rows * 20, cols * 20)
         x_coords = np.array(xs[0])
         y_coords = np.array([row[0] for row in ys])
 
     # 建立 Plotly 3D Surface
     fig = go.Figure(data=[
         go.Surface(
-            z=band1,     # 直接給 2D 陣列
+            z=band1,     # 海拔高度 (已降採樣)
             x=x_coords,  # 經度
             y=y_coords,  # 緯度
             colorscale="Viridis"
@@ -148,4 +131,7 @@ try:  # 讀取 DEM
     st.plotly_chart(fig)
 
 except rasterio.errors.RasterioIOError as e:
+    # 錯誤時會顯示找不到哪個路徑的檔案
     st.error(f"⚠️ 無法開啟 GeoTIFF：{tif_path}\n請確認檔案存在且為有效格式。\n詳細錯誤：{e}")
+except Exception as e:
+    st.error(f"⚠️ 發生未知錯誤：{e}")
