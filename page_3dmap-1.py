@@ -9,9 +9,17 @@ st.header("新竹市公車站牌位置")
 # --- 1. 生成資料 (向量) ---
 url = "https://odws.hccg.gov.tw/001/Upload/25/opendataback/9059/54/4bb8fc44-f466-470d-9724-cfd9a0fdb96c.json"
 
-data_youbike = pd.read_json(url)
-data = data_youbike[['latitude','longitude']].rename(columns={'lng':'lon'})
+dresponse = requests.get(url)
+data_json = response.json()
 
+if isinstance(data_json, list):
+    df = pd.DataFrame(data_json)
+elif isinstance(data_json, dict) and "Data" in data_json:
+    df = pd.DataFrame(data_json["Data"])
+else:
+    st.error("⚠️ JSON 結構不符預期，請檢查來源")
+    st.stop()
+    
 center_lat = 24.80395 
 center_lon = 120.9647
 data = pd.DataFrame({
