@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pydeck as pdk
+import requests
 
 st.title("Pydeck 3D 地圖 (向量 - 密度圖)")
 st.header("新竹市公車站牌位置")
@@ -19,7 +20,7 @@ elif isinstance(data_json, dict) and "Data" in data_json:
 else:
     st.error("⚠️ JSON 結構不符預期，請檢查來源")
     st.stop()
-    
+
 center_lat = 24.80395 
 center_lon = 120.9647
 data = pd.DataFrame({
