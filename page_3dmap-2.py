@@ -78,7 +78,7 @@ st.dataframe(df_year)
 st.title("Plotly 3D 地圖 (DEM Surface)")
 # --- 1. 讀取 DEM ---
 # 建立相對路徑
-REMOTE_TIF_URL = "YOUR_PUBLIC_URL_FOR_TAIWAN_DEM" 
+REMOTE_TIF_URL = "https://drive.google.com/file/d/1zzK2alk7muC_uRdICVseYGPUMc3MtPLt/view?usp=sharing" 
 # 將 tif_path 直接設定為雲端 URL，這樣 rasterio 就能直接讀取
 tif_path = REMOTE_TIF_URL
 
