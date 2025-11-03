@@ -82,6 +82,10 @@ REMOTE_TIF_URL = "https://drive.google.com/uc?export=download&id=1zzK2alk7muC_uR
 # 將 tif_path 直接設定為雲端 URL，這樣 rasterio 就能直接讀取
 tif_path = REMOTE_TIF_URL
 
+if not os.path.exists(tif_path):
+    st.info("🌐 正在從 Google Drive 下載大型 GeoTIFF 檔案 (僅首次運行需下載)...")
+    os.makedirs(os.path.dirname(tif_path), exist_ok=True)
+    
 try:  # 讀取 DEM
     with rasterio.open(tif_path) as src:
         band1 = src.read(1)
