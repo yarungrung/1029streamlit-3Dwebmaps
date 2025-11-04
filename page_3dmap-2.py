@@ -6,7 +6,6 @@ import rasterio
 import numpy as np
 import os
 
-
 file_path = "WID_Data_29102025-044042.csv"
 st.title("Plotly 3D 地球 全球極端貧窮人口比例")
 
