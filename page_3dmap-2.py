@@ -78,27 +78,28 @@ st.dataframe(df_year)
 st.title("Plotly 3D 地圖 (DEM Surface)")
 
 # --- 1. 讀取 DEM ---
-# 該檔案是一個可靠的測試用 COG (Cloud Optimized GeoTIFF)
-TIF_URL = "s3://opendata.digitalglobe.com/public/sample-gdal/example-COG.tif"
+# 1. 定義檔案名稱：使用經過 QGIS 處理的、極小的、確認有效的 GeoTIFF 檔案
+tif_filename = 'turtleisland.tif' 
 
-# 為了讓 GDAL 讀取 S3 上的 COG，我們使用 /vsis3/ 前綴
-tif_path = f"/vsis3/{TIF_URL.replace('s3://', '')}"
+# 2. 建立完整的相對路徑：確保 Streamlit Cloud 能正確找到位於 data/ 資料夾中的檔案
+tif_path = os.path.join(os.path.dirname(__file__), "data", tif_filename)
 
+# 3. 檢查檔案是否存在 (防止 Git 提交遺漏錯誤)
+if not os.path.exists(tif_path):
+    st.error(f"❌ 檔案遺失！請確認檔案 {tif_path} 已在 GitHub 倉庫的 data/ 資料夾中提交。")
+    st.stop()
 
-try:  # 讀取 DEM
+try:  # 讀取 GeoTIFF
     with rasterio.open(tif_path) as src:
         band1 = src.read(1)
         transform = src.transform
 
-        st.write("Raster shape:", band1.shape)
-        st.image(band1, caption="S3 測試 GeoTIFF", use_column_width=True)
-
-        # 由於檔案極小，降採樣可省略，但為保持繪圖邏輯我們保留它
-        band1 = band1[::5, ::5]  # 稍微降採樣
-
+        st.write("Raster shape :", band1.shape)
+        
         # 建立座標網格
         rows, cols = np.indices(band1.shape)
-        xs, ys = rasterio.transform.xy(transform, rows * 5, cols * 5)
+        # 座標計算
+        xs, ys = rasterio.transform.xy(transform, rows, cols)
         x_coords = np.array(xs[0])
         y_coords = np.array([row[0] for row in ys])
 
@@ -116,7 +117,7 @@ try:  # 讀取 DEM
 # 使用 update_layout 方法來修改圖表的整體佈局和外觀設定
 # 設定圖表的寬度和高度 (單位：像素)
     fig.update_layout(
-        title="Plotly 3D 地圖 (COG 測試成功)",
+        title="龜山島 3D 地形圖 ",
         width=900,
         height=750,
         scene=dict(
@@ -129,6 +130,8 @@ try:  # 讀取 DEM
     # --- 4. 在 Streamlit 中顯示 ---
     st.plotly_chart(fig)
 
-
+except rasterio.errors.RasterioIOError as e:
+    # 如果這個錯誤再次出現，則表示 small_dem_final.tif 仍然是無效的 GeoTIFF
+    st.error(f"⚠️ 檔案格式錯誤！無法開啟 GeoTIFF：{tif_path}\n詳細錯誤：{e}")
 except Exception as e:
-    st.error(f"⚠️ 最終錯誤：無法讀取 GeoTIFF。這表示底層 GDAL 函式庫可能有問題。\n詳細錯誤：{e}")
+    st.error(f"⚠️ 發生未知錯誤：{e}")
