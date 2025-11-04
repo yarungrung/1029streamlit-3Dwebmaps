@@ -73,7 +73,10 @@ st.dataframe(df_year)
 
 
 # ---------------------------------------------------------------------------------------
-
+import os                 # <-- 必須匯入 os，否則 os.path.exists 會報錯 (NameError)
+import rioxarray as rxr   # <-- 必須匯入 rioxarray，否則 rxr.open_rasterio 會報錯 (NameError)
+import plotly.graph_objects as go
+import streamlit as st
 st.title("Plotly 3D 地圖 (DEM Surface)")
 st.header("互動式 龜山島DEM 3D 模型")
 
