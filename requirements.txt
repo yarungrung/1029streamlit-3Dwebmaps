@@ -6,5 +6,6 @@ plotly
 geopandas
 rasterio
 xarray
+rioxarray
 localtileserver
 fsspec
