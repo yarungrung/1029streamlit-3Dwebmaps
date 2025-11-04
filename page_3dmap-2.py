@@ -81,28 +81,25 @@ st.title("Plotly 3D 地圖 (DEM Surface)")
 st.header("互動式 龜山島DEM 3D 模型")
 
 
-# --- 讀取 DEM 檔案 ---
-# 檔案路徑：假設 'turtleisland.tif' 位於 'data' 
-tif_filename = 'turtleisland.tif'
-file_path = os.path.join(os.path.dirname(__file__), "data", tif_filename)
+# --- 1. 讀取 DEM 檔案 ---
 
-# 2. 檢查檔案是否存在
+# A. 定義檔案名稱和路徑 (必須在檢查前完成定義！)
+tif_filename = 'turtleisland.tif'
+# 使用 os.path.join 建立完整的相對路徑
+tif_path = os.path.join(os.path.dirname(__file__), "data", tif_filename) 
+
+
+# B. 檢查檔案是否存在 (現在 tif_path 已經被定義了)
 if not os.path.exists(tif_path):
     st.error(f"❌ 檔案遺失！請確認檔案 {tif_path} 已在 data/ 資料夾中提交。")
     st.stop()
-    
-# 3. 使用 rioxarray 讀取 DEM 影像 
+ 
+# C. 使用 rioxarray 讀取 DEM 影像 
 try:
     # 讀取數據，並去除單一的 'band' 維度
-    data = rxr.open_rasterio(tif_path, masked=True).squeeze()
-    
+    data = rxr.open_rasterio(tif_path, masked=True).squeeze() 
     st.info(f"成功讀取 DEM 檔案：{tif_filename}，網格尺寸：{data.shape}。")
     
-except Exception as e:
-    st.error(f"⚠️ 讀取檔案時發生錯誤：{e}")
-    # 確保在讀取失敗時停止執行後續的繪圖邏輯
-    st.stop()
-
 # --- 2. 3D 互動地圖視覺化 (Plotly) ---
 
 try: 
