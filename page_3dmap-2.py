@@ -84,7 +84,7 @@ st.header("互動式 龜山島DEM 3D 模型")
 # --- 讀取 DEM 檔案 ---
 # 檔案路徑：假設 'turtleisland.tif' 位於 'data' 
 tif_filename = 'turtleisland.tif'
-file_path = "data/turtleisland.tif"
+file_path = os.path.join(os.path.dirname(__file__), "data", tif_filename)
 
 # 2. 檢查檔案是否存在
 if not os.path.exists(tif_path):
