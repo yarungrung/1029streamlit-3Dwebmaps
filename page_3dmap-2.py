@@ -78,7 +78,6 @@ st.dataframe(df_year)
 st.title("Plotly 3D 地圖 (DEM Surface)")
 st.header("互動式 龜山島DEM 3D 模型")
 
-import rioxarray as rxr
 
 # --- 讀取 DEM 檔案 ---
 # 檔案路徑：假設 'turtleisland.tif' 位於 'data' 
