@@ -76,62 +76,75 @@ st.dataframe(df_year)
 # ---------------------------------------------------------------------------------------
 
 st.title("Plotly 3D 地圖 (DEM Surface)")
+st.header("互動式 龜山島DEM 3D 模型")
 
-# --- 1. 讀取 DEM ---
-# 1. 定義檔案名稱：使用經過 QGIS 處理的、極小的、確認有效的 GeoTIFF 檔案
-tif_filename = 'turtleisland.tif' 
+import rioxarray as rxr
 
-# 2. 建立完整的相對路徑：確保 Streamlit Cloud 能正確找到位於 data/ 資料夾中的檔案
-tif_path = os.path.join(os.path.dirname(__file__), "data", tif_filename)
+# --- 讀取 DEM 檔案 ---
+# 檔案路徑：假設 'turtleisland.tif' 位於 'data' 
+tif_filename = 'turtleisland.tif'
+file_path = "data/turtleisland.tif"
 
-# 3. 檢查檔案是否存在 (防止 Git 提交遺漏錯誤)
+# 2. 檢查檔案是否存在
 if not os.path.exists(tif_path):
-    st.error(f"❌ 檔案遺失！請確認檔案 {tif_path} 已在 GitHub 倉庫的 data/ 資料夾中提交。")
+    st.error(f"❌ 檔案遺失！請確認檔案 {tif_path} 已在 data/ 資料夾中提交。")
+    st.stop()
+    
+# 3. 使用 rioxarray 讀取 DEM 影像 
+try:
+    # 讀取數據，並去除單一的 'band' 維度
+    data = rxr.open_rasterio(tif_path, masked=True).squeeze()
+    
+    st.info(f"成功讀取 DEM 檔案：{tif_filename}，網格尺寸：{data.shape}。")
+    
+except Exception as e:
+    st.error(f"⚠️ 讀取檔案時發生錯誤：{e}")
+    # 確保在讀取失敗時停止執行後續的繪圖邏輯
     st.stop()
 
-try:  # 讀取 GeoTIFF
-    with rasterio.open(tif_path) as src:
-        band1 = src.read(1)
-        transform = src.transform
+# --- 2. 3D 互動地圖視覺化 (Plotly) ---
 
-        st.write("Raster shape :", band1.shape)
-        
-        # 建立座標網格
-        rows, cols = np.indices(band1.shape)
-        # 座標計算
-        xs, ys = rasterio.transform.xy(transform, rows, cols)
-        x_coords = np.array(xs[0])
-        y_coords = np.array([row[0] for row in ys])
+try: 
+    # 2.1 提取高程數據 (Z 軸)
+    elevation_data = data.values
+    
+    # 2.2 從 xarray 數據中提取坐標 (X/Y 軸)
+    # xarray/rioxarray 自動處理了地理坐標到數組的映射，方便提取
+    x_coords = data.x.values
+    y_coords = data.y.values
 
-    # 建立 Plotly 3D Surface
+    # 2.3 建立 Plotly 3D Surface 圖表物件
     fig = go.Figure(data=[
         go.Surface(
-            z=band1,     # 海拔高度 
-            x=x_coords,  # 經度
-            y=y_coords,  # 緯度
-            colorscale="Viridis"
+            z=elevation_data, # 海拔高度 (Z 軸)
+            x=x_coords,       # X 坐標 (東距/北距)
+            y=y_coords,       # Y 坐標 (東距/北距)
+            colorscale="Viridis", # 使用 Viridis 顏色圖 (可選 'Terrain', 'Electric' 等)
+            name="DEM Surface"
         )
     ])
 
-# --- 3. 調整 3D 視角和外觀 ---
-# 使用 update_layout 方法來修改圖表的整體佈局和外觀設定
-# 設定圖表的寬度和高度 (單位：像素)
+    # 2.4 調整 3D 視角和外觀
     fig.update_layout(
-        title="龜山島 3D 地形圖 ",
+        title="**🐢 龜山島 3D 地形圖 (Plotly Interactive)**",
+        # 設定寬度和高度
         width=900,
         height=750,
         scene=dict(
-            xaxis_title="經度 (X)",
-            yaxis_title="緯度 (Y)",
-            zaxis_title="海拔 (Z)"
+            xaxis_title="X 坐標 (東距, m)",
+            yaxis_title="Y 坐標 (北距, m)",
+            zaxis_title="海拔 (Z, m)",
+            aspectmode='data' # 確保 X, Y, Z 的比例正確顯示
         )
     )
 
-    # --- 4. 在 Streamlit 中顯示 ---
-    st.plotly_chart(fig)
+    # 2.5 在 Streamlit 中顯示
+    st.plotly_chart(fig, use_container_width=True)
 
-except rasterio.errors.RasterioIOError as e:
-    # 如果這個錯誤再次出現，則表示 small_dem_final.tif 仍然是無效的 GeoTIFF
-    st.error(f"⚠️ 檔案格式錯誤！無法開啟 GeoTIFF：{tif_path}\n詳細錯誤：{e}")
 except Exception as e:
-    st.error(f"⚠️ 發生未知錯誤：{e}")
+    st.error(f"⚠️ 建立 Plotly 3D 圖時發生錯誤：{e}")
+
+# --- 3. 清理資源 ---
+# 關閉檔案句柄
+data.close() 
+st.success("Plotly 3D 模型繪製完成，已關閉檔案資源。")
