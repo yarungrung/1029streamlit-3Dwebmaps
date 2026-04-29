@@ -77,7 +77,7 @@ layer_grid = pdk.Layer( # 稍微改個名字避免混淆
     get_position='[lon, lat]',
     get_elevation_weight='elevation', # 使用 'elevation' 欄位當作高度
     elevation_scale=1,
-    cell_size=500, #一個網格500公尺
+    cell_size=800, #一個網格800公尺
     extruded=True,
     pickable=True # 加上 pickable 才能顯示 tooltip
 )
