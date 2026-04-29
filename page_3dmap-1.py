@@ -95,3 +95,22 @@ r_grid = pdk.Deck( # 稍微改個名字避免混淆
     tooltip={"text": "海拔高度: {elevationValue} 公尺"} # GridLayer 用 elevationValue
 )
 st.pydeck_chart(r_grid)
+
+#==============================================================================
+# --- 使用 HeatmapLayer ---
+layer_heatmap = pdk.Layer(
+    'HeatmapLayer',
+    data=df_dem,
+    get_position='[lon, lat]',
+    get_weight='elevation',    # 以海拔高度作為熱度權重
+    radius_pixels=60,         # 暈染的半徑，越大越平滑
+    intensity=1,              # 強度
+    threshold=0.05            # 門檻值，低於此值的會被隱藏（讓邊緣乾淨一點）
+)
+
+view_state_heatmap = pdk.ViewState(
+    latitude=base_lat, longitude=base_lon, zoom=11, pitch=0 # 熱點圖建議 pitch=0 俯瞰最準
+)
+
+r_heatmap = pdk.Deck(layers=[layer_heatmap], initial_view_state=view_state_heatmap)
+st.pydeck_chart(r_heatmap)
