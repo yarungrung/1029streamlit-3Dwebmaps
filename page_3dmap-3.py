@@ -79,85 +79,104 @@ except NameError:
     pass
 
 
-#旋轉圖
-import imageio.v2 as imageio
+st.title("Plotly 3D 地圖 (DEM Surface) - 動態旋轉展示")
 
-st.title("3D 地形動態旋轉展示")
-
-# 1. 讀取你的 DEM 檔案 (沿用之前的成功設定)
+# 1. 設定圖資路徑 (採用同目錄讀取法)
 tif_filename = 'dem5m.tif'
 tif_path = os.path.join(os.path.dirname(__file__), tif_filename)
 
+# 檢查檔案是否存在
 if not os.path.exists(tif_path):
-    st.error(f"找不到檔案：{tif_path}")
+    st.error(f"❌ 找不到 DEM 檔案，請確認 {tif_filename} 已上傳至 GitHub 根目錄。")
     st.stop()
 
-# 讀取並適度降採樣（避免資料量太大跑不動，[::5] 代表每5個點抽1個）
-data = rxr.open_rasterio(tif_path, masked=True).squeeze()
-z_values = data.values[::5, ::5] 
-
-# 2. 建立 Plotly 3D 地形圖
-fig = go.Figure(data=[go.Surface(z=z_values, colorscale='Terrain')])
-
-# 設定基礎視覺樣式（隱藏座標軸，讓畫面乾淨）
-fig.update_layout(
-    title='DEM 3D 旋轉動畫生成中...',
-    scene=dict(
-        xaxis=dict(visible=False),
-        yaxis=dict(visible=False),
-        zaxis=dict(visible=False),
-        aspectratio=dict(x=1, y=1, z=0.3) # 調整 Z 軸可改變地形起伏立體感
-    ),
-    width=800,
-    height=600
-)
-
-# 3. 自動生成旋轉畫面並匯出 GIF
-output_gif = "dem_rotation.gif"
-
-with st.spinner("正在繪製各角度地圖並合成為 GIF，請稍候..."):
-    frames = []
-    temp_files = []
+try:
+    # 2. 讀取 DEM 影像
+    # 使用 masked=True 會自動將 NoData 轉為 NaN
+    data = rxr.open_rasterio(tif_path, masked=True).squeeze()
     
-    # 建立 36 個角度（每 10 度一張，共 360 度完美循環）
-    angles = np.arange(0, 360, 10)
+    # 3. 數據降採樣與安全性清理 (防止 ValueError 的關鍵)
+    # [::5, ::5] 代表每 5 個點抽樣 1 個，避免資料量過大導致記憶體溢出
+    sampled_data = data.values[::5, ::5]
     
-    for i, angle in enumerate(angles):
-        # 將角度轉換為弧度，計算相機的 X, Y 位置實現繞圈旋轉
-        rad = np.radians(angle)
-        x_eye = 1.5 * np.cos(rad)
-        y_eye = 1.5 * np.sin(rad)
+    # 確保資料為 2D 矩陣 (若為 3D 則取第一個波段)
+    if len(sampled_data.shape) == 3:
+        z_values = sampled_data[0, :, :]
+    else:
+        z_values = sampled_data
         
-        # 更新 Plotly 的相機視角 (Camera View)
-        fig.update_layout(scene_camera=dict(eye=dict(x=x_eye, y=y_eye, z=1.2)))
-        
-        # 儲存當前角度的臨時圖片
-        temp_filename = f"temp_frame_{i}.png"
-        fig.write_image(temp_filename, format="png")
-        temp_files.append(temp_filename)
-        
-        # 讀取圖片存入陣列
-        frames.append(imageio.imread(temp_filename))
+    # 將矩陣中的 NaN (空值/無資料區) 替換為 0.0，否則 Plotly 會崩潰
+    z_values = np.nan_to_num(z_values, nan=0.0)
+    
+    st.info(f"📊 成功讀取並清理 DEM 檔案！網格尺寸：{z_values.shape}")
 
-    # 使用 imageio 將所有圖片打包成 GIF 
-    # duration=100 代表每張圖停 100 毫秒（數字越小轉越快），loop=0 代表無限重複撥放
-    imageio.mimsave(output_gif, frames, duration=100, loop=0)
+    # 4. 建立 Plotly 3D 地形圖
+    fig = go.Figure(data=[go.Surface(z=z_values, colorscale='Terrain')])
 
-    # 清除剛剛產生的幾十張暫存 PNG 圖片，保持資料夾乾淨
-    for temp_file in temp_files:
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
-
-st.success("🎉 動態 GIF 產出成功！")
-
-# 4. 在 Streamlit 網頁上呈現結果
-st.image(output_gif, caption="北北基桃 3D 地形不間斷旋轉圖", use_container_width=True)
-
-# 提供下載按鈕，讓你可以把 GIF 下載回電腦
-with open(output_gif, "rb") as file:
-    st.download_button(
-        label="💾 下載動態 GIF 檔案",
-        data=file,
-        file_name="mountain_3d_dem.gif",
-        mime="image/gif"
+    # 隱藏座標軸，讓畫面聚焦在地形本體，並調整立體感 (z=0.3)
+    fig.update_layout(
+        scene=dict(
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False),
+            zaxis=dict(visible=False),
+            aspectratio=dict(x=1, y=1, z=0.3) 
+        ),
+        width=800,
+        height=600,
+        margin=dict(l=0, r=0, b=0, t=0) # 移除邊介白邊
     )
+
+    # 5. 生成 360 度旋轉動畫並合成為 GIF
+    output_gif = "dem_rotation.gif"
+
+    # 在網頁上顯示載入中的動畫
+    with st.spinner("🔄 正在繪製各角度 3D 地圖並合成為動態 GIF，請稍候..."):
+        frames = []
+        temp_files = []
+        
+        # 每 10 度擷取一張圖，共 36 張圖組成完美循環
+        angles = np.arange(0, 360, 10)
+        
+        for i, angle in enumerate(angles):
+            # 計算相機繞圈旋轉的 X, Y 座標
+            rad = np.radians(angle)
+            x_eye = 1.5 * np.cos(rad)
+            y_eye = 1.5 * np.sin(rad)
+            
+            # 更新相機視角
+            fig.update_layout(scene_camera=dict(eye=dict(x=x_eye, y=y_eye, z=1.2)))
+            
+            # 輸出暫存圖片 (需依賴 requirements.txt 中的 kaleido)
+            temp_filename = f"temp_frame_{i}.png"
+            fig.write_image(temp_filename, format="png")
+            temp_files.append(temp_filename)
+            
+            # 讀取圖片存入記憶體
+            frames.append(imageio.imread(temp_filename))
+
+        # 打包成無限重複撥放的 GIF (loop=0 代表無限循環)
+        # duration=100 代表每張圖停留 100 毫秒，數字越小轉越快
+        imageio.mimsave(output_gif, frames, duration=100, loop=0)
+
+        # 刪除硬碟中的暫存 PNG 檔案，保持環境乾淨
+        for temp_file in temp_files:
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+
+    st.success("🎉 動態不間斷旋轉 GIF 產出成功！")
+
+    # 6. 呈現成果與下載按鈕
+    st.image(output_gif, caption="北北基桃 3D 地形旋轉展示 (無限重複)", use_container_width=True)
+
+    # 讀取剛剛做好的 GIF 提供使用者下載
+    with open(output_gif, "rb") as file:
+        st.download_button(
+            label="💾 下載此動態 GIF 檔案",
+            data=file,
+            file_name="dem_3d_rotation.gif",
+            mime="image/gif"
+        )
+
+except Exception as e:
+    st.error(f"❌ 執行過程中發生錯誤：{e}")
+    st.stop()
