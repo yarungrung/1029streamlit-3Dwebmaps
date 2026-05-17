@@ -15,7 +15,7 @@ st.header("廬山溫泉一帶 DEM 3D 模型")
 tif_filename = 'dem5m.tif.aux.xml'
 
 # 建立完整的相對路徑
-tif_path = os.path.join(os.path.dirname(__file__), "data", tif_filename) 
+tif_path = os.path.join(os.path.dirname(__file__),tif_filename) 
 
 # 檢查檔案是否存在
 if not os.path.exists(tif_path): 
