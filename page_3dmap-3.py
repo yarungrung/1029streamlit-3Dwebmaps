@@ -55,8 +55,8 @@ try:
     fig.update_layout(
         title="**廬山溫泉一帶 3D 地形圖 (Plotly Interactive)**",
         
-        width=900,
-        height=750,
+        width=1800,
+        height=1800,
         scene=dict(
             xaxis_title="X 坐標",
             yaxis_title="Y 坐標",
