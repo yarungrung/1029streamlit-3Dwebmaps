@@ -79,6 +79,8 @@ except NameError:
     pass
 
 
+#旋轉圖
+
 st.title("Plotly 3D 地圖 (DEM Surface) - 動態旋轉展示")
 
 # 1. 設定圖資路徑 (採用同目錄讀取法)
@@ -111,7 +113,7 @@ try:
     st.info(f"📊 成功讀取並清理 DEM 檔案！網格尺寸：{z_values.shape}")
 
     # 4. 建立 Plotly 3D 地形圖
-    fig = go.Figure(data=[go.Surface(z=z_values, colorscale='Terrain')])
+    fig = go.Figure(data=[go.Surface(z=z_values, colorscale='earth')])
 
     # 隱藏座標軸，讓畫面聚焦在地形本體，並調整立體感 (z=0.3)
     fig.update_layout(
