@@ -146,7 +146,7 @@ try:
             y_eye = 1.5 * np.sin(rad)
             
             # 更新相機視角
-            fig.update_layout(scene_camera=dict(eye=dict(x=x_eye, y=y_eye, z=1.2)))
+            fig.update_layout(scene_camera=dict(eye=dict(x=x_eye, y=y_eye, z=0.9)))
             
             # 輸出暫存圖片 (需依賴 requirements.txt 中的 kaleido)
             temp_filename = f"temp_frame_{i}.png"
@@ -158,7 +158,7 @@ try:
 
         # 打包成無限重複撥放的 GIF (loop=0 代表無限循環)
         # duration=100 代表每張圖停留 100 毫秒，數字越小轉越快
-        imageio.mimsave(output_gif, frames, duration=100, loop=0)
+        imageio.mimsave(output_gif, frames, duration=10000, loop=0)
 
         # 刪除硬碟中的暫存 PNG 檔案，保持環境乾淨
         for temp_file in temp_files:
@@ -168,7 +168,7 @@ try:
     st.success("🎉 動態不間斷旋轉 GIF 產出成功！")
 
     # 6. 呈現成果與下載按鈕
-    st.image(output_gif, caption="北北基桃 3D 地形旋轉展示 (無限重複)", use_container_width=True)
+    st.image(output_gif, caption="3D 地形圖的旋轉展示", use_container_width=True)
 
     # 讀取剛剛做好的 GIF 提供使用者下載
     with open(output_gif, "rb") as file:
