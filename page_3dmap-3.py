@@ -80,7 +80,7 @@ except NameError:
 
 
 #旋轉圖
-
+import imageio.v2 as imageio
 st.title("Plotly 3D 地圖 (DEM Surface) - 動態旋轉展示")
 
 # 1. 設定圖資路徑 (採用同目錄讀取法)
