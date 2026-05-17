@@ -12,7 +12,7 @@ st.header("廬山溫泉一帶 DEM 3D 模型")
 
 
 # --- 1. 讀取 DEM 檔案 ---
-tif_filename = 'dem5m.tif.aux.xml'
+tif_filename = 'dem5m.tif'
 
 # 建立完整的相對路徑
 tif_path = os.path.join(os.path.dirname(__file__),tif_filename) 
