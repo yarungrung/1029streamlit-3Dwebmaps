@@ -1,5 +1,12 @@
 # --- 確保所有必需的函式庫已在檔案頂部匯入 ---
 import rioxarray as rxr
+import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
+import pandas as pd
+import rasterio
+import numpy as np
+import os
 st.title("Plotly 3D 地圖 (DEM Surface)")
 st.header("廬山溫泉一帶 DEM 3D 模型")
 
