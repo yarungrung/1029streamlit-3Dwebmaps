@@ -9,3 +9,5 @@ xarray
 rioxarray
 localtileserver
 fsspec
+kaleido
+imageio
