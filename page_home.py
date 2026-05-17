@@ -15,7 +15,7 @@ st.write("這是一個使用 Streamlit 建立的3D互動式地圖應用程式。
 
 # 將上傳的照片叫出並呈現
 image = Image.open("41244.jpg")
-st.image(image, caption="圖片", use_container_width=True)
+st.image(image, caption="是作者我本人的照片喔😀", use_container_width=True)
 
 # 直接將 照片的 URL 傳給 st.image()
 #image_url = "https://i.imgur.com/uf1T4ND.png"
