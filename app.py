@@ -6,6 +6,7 @@ pages = [
    st.Page("page_home.py", title="專案首頁", icon="🏠"),
    st.Page("page_3dmap-1.py", title="Pydeck 3D互動地圖瀏覽", icon="🌏"),
    st.Page("page_3dmap-2.py", title="Plotly 3D互動地圖瀏覽", icon="ℹ️")
+   st.Page("page_3dmap-3.py", title="Plotly 3D互動地圖瀏覽", icon="♨️")
 ]
 
 # 2. 使用 st.navigation() 建立導覽 (例如在側邊欄)
