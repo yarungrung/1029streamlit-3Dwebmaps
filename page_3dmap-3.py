@@ -158,7 +158,7 @@ try:
 
         # 打包成無限重複撥放的 GIF (loop=0 代表無限循環)
         # duration=100 代表每張圖停留 100 毫秒，數字越小轉越快
-        imageio.mimsave(output_gif, frames, duration=10000, loop=0)
+        imageio.mimsave(output_gif, frames, duration=3000, loop=0)
 
         # 刪除硬碟中的暫存 PNG 檔案，保持環境乾淨
         for temp_file in temp_files:
